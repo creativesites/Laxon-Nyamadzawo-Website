@@ -2,9 +2,19 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Laxson Nyamadzawo | Minister, Theologian & Songwriter",
-  description: "The digital sanctuary and official website of Pastor Laxson Nyamadzawo. Explore academic theological writings, chaplaincy insights, and Congolese rhumba gospel praise music.",
-  keywords: ["Laxson Nyamadzawo", "Pastor Laxson", "ZAOGA Forward in Faith", "Theology", "Chaplaincy", "Gospel Music", "Congolese Rhumba Gospel", "Zimbabwe Christian Minister"],
+  title: "Pastor Laxson Nyamadzawo | Minister, Theologian & Gospel Songwriter",
+  description:
+    "The official website of Pastor Laxson Nyamadzawo — shepherding minister, chaplain, theological writer, and Congolese rhumba gospel praise songwriter. ZAOGA Forward in Faith Ministries.",
+  keywords: [
+    "Laxson Nyamadzawo",
+    "Pastor Laxson",
+    "ZAOGA Forward in Faith",
+    "Theology",
+    "Chaplaincy",
+    "Gospel Music",
+    "Congolese Rhumba Gospel",
+    "Zimbabwe Christian Minister",
+  ],
 };
 
 export default function RootLayout({
@@ -13,11 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased scroll-smooth"
-    >
-      <body className="min-h-full flex flex-col bg-[#fcfbf7] text-[#1c1c1a] dark:bg-[#0f0f0e] dark:text-[#f4f4f3] transition-colors duration-300">
+    <html lang="en" className="h-full antialiased scroll-smooth">
+      <body className="min-h-full flex flex-col bg-white text-[#2d2d2d]">
         {children}
       </body>
     </html>

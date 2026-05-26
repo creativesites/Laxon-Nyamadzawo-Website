@@ -1,563 +1,300 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { databaseService, Writing, MusicTrack } from "@/lib/supabase";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { 
-  BookOpen, 
-  Calendar, 
-  Clock, 
-  ChevronRight, 
-  ArrowRight, 
-  Sparkles, 
-  Music, 
-  Heart, 
-  GraduationCap, 
-  Send, 
-  CheckCircle,
-  Play,
-  FileText
-} from "lucide-react";
+import { databaseService, Writing, MusicTrack } from "@/lib/supabase";
 
-export default function Home() {
+export default function HomePage() {
   const [writings, setWritings] = useState<Writing[]>([]);
-  const [music, setMusic] = useState<MusicTrack[]>([]);
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  
-  // Contact form state
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [formSent, setFormSent] = useState(false);
 
-  // Fetch initial data
   useEffect(() => {
-    async function loadData() {
-      const writingsData = await databaseService.getWritings();
-      // Take the top 3 featured writings for the homepage
-      setWritings(writingsData.slice(0, 3));
-      
-      const musicData = await databaseService.getMusicTracks();
-      setMusic(musicData);
-    }
-    loadData();
+    databaseService.getWritings().then((d) => setWritings(d.slice(0, 3)));
+    databaseService.getMusicTracks().then(setTracks);
   }, []);
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setIsSubmitting(true);
-    try {
-      await databaseService.submitMessage(formData.name, formData.email, formData.message);
-      setSubmitSuccess(true);
-      setFormData({ name: "", email: "", message: "" });
-      setTimeout(() => setSubmitSuccess(false), 5000);
-    } catch (err) {
-      console.error("Failed to submit:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await databaseService.submitContactMessage(formData);
+    setFormSent(true);
+    setFormData({ name: "", email: "", message: "" });
+    setTimeout(() => setFormSent(false), 4000);
   };
 
   return (
     <>
       <Navbar />
-      
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-16 px-6 md:px-12 overflow-hidden bg-radial from-[#fcfbf7] via-[#f9f5ea] to-[#f5ebd9]/30 dark:from-[#131312] dark:via-[#0f0f0e] dark:to-[#090908]">
-        {/* Background ambient gold glows */}
-        <div className="absolute top-[20%] left-[10%] w-72 h-72 rounded-full bg-gold-500/5 dark:bg-gold-500/3 blur-3xl"></div>
-        <div className="absolute bottom-[20%] right-[10%] w-96 h-96 rounded-full bg-gold-500/10 dark:bg-gold-500/3 blur-3xl"></div>
 
-        <div className="max-w-4xl mx-auto text-center z-10 animate-fade-in-up mt-12">
-          
-          {/* Accent Badge */}
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-gold-500/20 bg-gold-500/5 text-gold-600 dark:text-gold-400 mb-8">
-            <Sparkles size={14} className="animate-spin-slow" />
-            <span className="text-xs uppercase tracking-widest font-semibold font-sans">
-              Faith · Ministry · Music
-            </span>
-          </div>
-
-          {/* Name & Titles */}
-          <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3] mb-6">
-            Laxson <span className="text-gold-500 dark:text-gold-400">Nyamadzawo</span>
+      {/* ═══ HERO ═══ */}
+      <section id="hero" className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+        <Image src="/hero_church_bg.png" alt="Church sanctuary" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-6 animate-fade-in-up">
+          <span className="inline-flex items-center gap-3 text-gold-300 text-xs font-semibold uppercase tracking-[4px] mb-6">
+            <span className="w-10 h-px bg-gold-400" />Welcome<span className="w-10 h-px bg-gold-400" />
+          </span>
+          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
+            Seek First the<br />
+            <span className="text-gold-400">Kingdom of God</span>
           </h1>
-          <p className="text-lg md:text-xl font-medium uppercase tracking-widest text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 mb-10">
-            Minister · Theologian · Songwriter
+          <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
+            The ministry of Pastor Laxson Nyamadzawo — shepherding hearts through pastoral care, theological wisdom, and gospel praise.
           </p>
-
-          {/* Matthew 6:33 quote */}
-          <div className="relative max-w-2xl mx-auto px-6 py-8 rounded-2xl bg-white/20 dark:bg-zinc-900/20 backdrop-blur-xs border border-gold-500/5 shadow-xs mb-12">
-            <p className="font-serif text-xl md:text-2xl italic leading-relaxed text-[#1c1c1a]/95 dark:text-[#f4f4f3]/95">
-              "But seek first his kingdom and his righteousness, and all these things will be given to you as well."
-            </p>
-            <p className="mt-3 text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-              — Matthew 6:33
-            </p>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#about"
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gold-500 text-white font-medium hover:bg-gold-600 shadow-md shadow-gold-500/10 hover:shadow-gold-500/20 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
-            >
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })} className="btn-primary">
               Discover More
-              <ArrowRight size={18} />
-            </a>
-            <a
-              href="#contact"
-              className="w-full sm:w-auto px-8 py-4 rounded-full border border-[#1c1c1a]/15 dark:border-[#f4f4f3]/15 hover:border-gold-500 text-[#1c1c1a] dark:text-[#f4f4f3] hover:text-gold-500 dark:hover:text-gold-400 font-medium transition-all duration-300 flex items-center justify-center cursor-pointer"
-            >
-              Get in Touch
-            </a>
-          </div>
-
-        </div>
-
-        {/* Scroll Hint */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-60 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-[10px] uppercase tracking-widest font-semibold mb-2">Scroll</span>
-          <div className="w-5 h-8 rounded-full border-2 border-gold-500/30 flex justify-center p-1">
-            <div className="w-1 h-2 bg-gold-500 rounded-full animate-bounce"></div>
+            </button>
+            <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} className="btn-outline">
+              Get In Touch
+            </button>
           </div>
         </div>
-
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+          <div className="w-6 h-10 rounded-full border-2 border-white/40 flex items-start justify-center pt-2">
+            <div className="w-1 h-2 bg-white/60 rounded-full" />
+          </div>
+        </div>
       </section>
 
-      {/* 2. ABOUT ME SECTION */}
-      <section id="about" className="py-24 px-6 md:px-12 bg-white dark:bg-[#0c0c0b] scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          
-          {/* Left Column: Visual Emblem/Placeholder */}
-          <div className="lg:col-span-5 relative flex justify-center">
-            <div className="relative w-72 h-96 md:w-80 md:h-110 rounded-2xl overflow-hidden border-2 border-gold-500/20 p-2 bg-[#fcfbf7] dark:bg-zinc-900 shadow-2xl flex items-center justify-center">
-              
-              {/* Gold abstract geometry representing faith */}
-              <div className="absolute inset-0 bg-radial from-gold-500/10 to-transparent"></div>
-              
-              {/* Elegant SVG Cross emblem as a placeholder until real photos arrive */}
-              <div className="relative text-center p-8 flex flex-col items-center">
-                <div className="w-16 h-28 border-4 border-gold-500/20 rounded-full flex items-center justify-center mb-6">
-                  <div className="w-[4px] h-20 bg-gold-500 rounded-full"></div>
-                  <div className="absolute w-12 h-[4px] bg-gold-500 rounded-full"></div>
-                </div>
-                <h4 className="font-serif text-xl font-bold text-gold-600 dark:text-gold-400">
-                  Laxson Nyamadzawo
-                </h4>
-                <p className="text-xs uppercase tracking-widest text-[#1c1c1a]/60 dark:text-[#f4f4f3]/60 mt-2">
-                  "Rooted in Faith, Called to Serve"
-                </p>
-              </div>
+      {/* ═══ FEATURE CARDS ═══ */}
+      <section className="relative z-20 -mt-20 px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { icon: "🕊️", title: "Pastoral Care", desc: "Shepherding communities with compassion, prayer, and the healing Word of God." },
+            { icon: "🎓", title: "Chaplaincy", desc: "Providing spiritual counsel and support across institutions and organizations." },
+            { icon: "📖", title: "Theological Teaching", desc: "Academic exploration of scripture, doctrine, and the African Christian witness." },
+          ].map((card, i) => (
+            <div key={i} className="bg-white rounded-lg p-8 shadow-lg shadow-black/5 border border-gray-100 card-hover text-center">
+              <span className="text-4xl mb-4 block">{card.icon}</span>
+              <h3 className="font-serif text-xl font-bold text-charcoal mb-3">{card.title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{card.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-              {/* Decorative corners */}
-              <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-gold-500"></div>
-              <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-gold-500"></div>
-              <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-gold-500"></div>
-              <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-gold-500"></div>
+      {/* ═══ ABOUT ═══ */}
+      <section id="about" className="py-28 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="relative animate-fade-in">
+            <div className="relative rounded-lg overflow-hidden shadow-2xl shadow-black/10">
+              <Image src="/about_pastor.png" alt="Pastor Laxson Nyamadzawo" width={600} height={700} className="object-cover w-full" />
+            </div>
+            <div className="absolute -bottom-6 -right-6 bg-gold-500 text-white px-8 py-5 rounded-lg shadow-lg">
+              <span className="text-3xl font-serif font-bold block">25+</span>
+              <span className="text-xs uppercase tracking-widest font-semibold">Years of Ministry</span>
             </div>
           </div>
-
-          {/* Right Column: Bio */}
-          <div className="lg:col-span-7 flex flex-col space-y-6">
-            <span className="text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-              About Me
-            </span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3]">
-              Rooted in Faith,<br />Called to Serve
+          <div className="space-y-6">
+            <span className="section-label">About Pastor Laxson</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
+              A Life Dedicated to<br />
+              <span className="text-gold-600">God&apos;s Purpose</span>
             </h2>
-            
-            <p className="text-base text-[#1c1c1a]/80 dark:text-[#f4f4f3]/80 leading-relaxed font-sans">
-              I am Laxson Nyamadzawo — a minister, theologian, and songwriter whose life is shaped by a deep and active Christian faith. Rooted in the rich heritage of Zimbabwe and the broader African Christian tradition, I am devoted to the proclamation of the Gospel and the building up of God's people.
+            <p className="text-gray-500 leading-relaxed text-lg">
+              Pastor Laxson Nyamadzawo is a dedicated shepherding minister within <strong className="text-charcoal">ZAOGA Forward in Faith Ministries International</strong>. His calling encompasses pastoral care, hospital and institutional chaplaincy, academic theological writing, and Congolese rhumba gospel songwriting.
             </p>
-            <p className="text-base text-[#1c1c1a]/80 dark:text-[#f4f4f3]/80 leading-relaxed font-sans">
-              My work spans pastoral ministry, chaplaincy, academic theological writing, and gospel music — particularly in the Congolese rhumba tradition. I am blessed with my partner Runako and our daughters Ethel, Providence, and Makanaka Praise.
+            <p className="text-gray-500 leading-relaxed">
+              Blessed with his partner <strong className="text-gold-700">Runako</strong> and daughters <strong className="text-gold-700">Ethel</strong>, <strong className="text-gold-700">Providence</strong>, and <strong className="text-gold-700">Makanaka Praise</strong>, he serves with a heart anchored in Matthew 6:33.
             </p>
-            <p className="text-base text-[#1c1c1a]/80 dark:text-[#f4f4f3]/80 leading-relaxed font-sans">
-              Everything I do flows from one conviction: that Jesus Christ is Lord, and that His kingdom is worth giving everything for.
-            </p>
-
-            {/* Keyword Pill Badges */}
-            <div className="flex flex-wrap gap-2 pt-4">
-              {["Theology", "Chaplaincy", "Gospel Music", "Pastoral Care", "Zimbabwe", "Lingala"].map((tag) => (
-                <span
-                  key={tag}
-                  className="px-4 py-2 rounded-full text-xs font-semibold tracking-wide border border-gold-500/10 bg-gold-500/5 text-gold-600 dark:text-gold-400 hover:border-gold-500/30 transition-all duration-300"
-                >
-                  {tag}
-                </span>
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              {["Peace of Mind", "Open Hearts", "Faithful Service", "Community Care"].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-sm font-medium text-charcoal">
+                  <span className="w-2 h-2 bg-gold-500 rounded-full flex-shrink-0" />
+                  {item}
+                </div>
               ))}
             </div>
-
+            <button onClick={() => document.getElementById("ministry")?.scrollIntoView({ behavior: "smooth" })} className="btn-outline-dark mt-4">
+              Learn More
+            </button>
           </div>
-
         </div>
       </section>
 
-      {/* 3. AREAS OF MINISTRY SECTION */}
-      <section id="ministry" className="py-24 px-6 md:px-12 bg-[#fcfbf7] dark:bg-[#0f0f0e] border-t border-gold-500/5 scroll-mt-20">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <span className="text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-            Areas of Ministry
-          </span>
-          <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3] mt-2">
-            Serving Faithfully Across Callings
+      {/* ═══ FULL-WIDTH CTA BANNER ═══ */}
+      <section className="relative py-24 overflow-hidden">
+        <Image src="/ministry_worship.png" alt="Worship" fill className="object-cover" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
+          <span className="section-label !text-gold-300 before:!bg-gold-400">Ways We Can Help</span>
+          <h2 className="font-serif text-4xl md:text-5xl font-bold text-white leading-tight mt-4 mb-6">
+            Bringing Hope Through Faith & Service
           </h2>
-          <div className="w-16 h-[2px] bg-gold-500 mx-auto mt-4"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* Card 1: Pastoral Care */}
-          <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400 mb-6">
-                <Heart size={24} />
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#1c1c1a] dark:text-[#f4f4f3]">
-                Pastoral Ministry
-              </h3>
-              <p className="text-sm text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans">
-                Providing spiritual leadership, preaching, and shepherding within the local church. Committed to sound doctrine, expository teaching, and the discipleship of believers in the African Christian context.
-              </p>
-            </div>
-            <a href="#contact" className="mt-8 text-xs font-semibold uppercase tracking-wider text-gold-600 dark:text-gold-400 hover:text-gold-700 flex items-center gap-1 group font-sans">
-              Request Collaboration
-              <ChevronRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-
-          {/* Card 2: Chaplaincy */}
-          <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400 mb-6">
-                <Sparkles size={24} />
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#1c1c1a] dark:text-[#f4f4f3]">
-                Chaplaincy
-              </h3>
-              <p className="text-sm text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans">
-                Offering pastoral presence, care, and spiritual support in institutional settings — bringing the peace and hope of Christ to those navigating life's most challenging seasons.
-              </p>
-            </div>
-            <a href="#contact" className="mt-8 text-xs font-semibold uppercase tracking-wider text-gold-600 dark:text-gold-400 hover:text-gold-700 flex items-center gap-1 group font-sans">
-              Connect with chaplain
-              <ChevronRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-
-          {/* Card 3: Theology */}
-          <div className="glass-card p-8 rounded-2xl flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400 mb-6">
-                <GraduationCap size={24} />
-              </div>
-              <h3 className="font-serif text-xl font-bold text-[#1c1c1a] dark:text-[#f4f4f3]">
-                Theological Teaching
-              </h3>
-              <p className="text-sm text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans">
-                Engaging deeply with Christian doctrine — from Trinitarian theology to ecclesiology — through academic writing, teaching, and resources that equip the Church for faithful witness.
-              </p>
-            </div>
-            <a href="#writings" className="mt-8 text-xs font-semibold uppercase tracking-wider text-gold-600 dark:text-gold-400 hover:text-gold-700 flex items-center gap-1 group font-sans">
-              Read writings
-              <ChevronRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-
+          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
+            Whether through pastoral guidance, chaplaincy support, theological teaching, or the unifying power of gospel music — we are here to serve.
+          </p>
+          <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} className="btn-primary">
+            Contact Pastor Laxson
+          </button>
         </div>
       </section>
 
-      {/* 4. THEOLOGICAL WRITINGS SECTION */}
-      <section id="writings" className="py-24 px-6 md:px-12 bg-white dark:bg-[#0c0c0b] scroll-mt-20 border-t border-gold-500/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end justify-between mb-16">
-          <div>
-            <span className="text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-              Writings & Academia
-            </span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3] mt-2">
-              Words That Illuminate the Faith
-            </h2>
+      {/* ═══ MINISTRY AREAS ═══ */}
+      <section id="ministry" className="py-28 px-6 lg:px-8 bg-cream">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="section-label justify-center">Service</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4 mb-6">Areas of Ministry</h2>
+            <p className="text-gray-500 leading-relaxed">Serving the body of Christ through diverse and impactful areas of spiritual ministry.</p>
           </div>
-          <Link
-            href="/writings"
-            className="mt-4 md:mt-0 font-sans text-sm font-semibold text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 flex items-center gap-1 group"
-          >
-            Browse All Writings
-            <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {writings.map((writing) => (
-            <article 
-              key={writing.id} 
-              className="p-8 rounded-2xl border border-gold-500/10 bg-[#fcfbf7]/40 dark:bg-[#121211]/30 hover:border-gold-500/30 transition-all duration-300 flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                
-                {/* Meta details */}
-                <div className="flex items-center justify-between text-xs text-[#1c1c1a]/55 dark:text-[#f4f4f3]/55 font-semibold font-sans uppercase tracking-widest">
-                  <span className="px-2.5 py-1 rounded-md bg-gold-500/5 border border-gold-500/10 text-gold-600 dark:text-gold-400">
-                    {writing.category}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} />
-                    {writing.reading_time} Min
-                  </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { img: "/about_pastor.png", title: "Pastoral Care", text: "Walking alongside believers through seasons of joy and trial with prayer, counsel, and unwavering presence." },
+              { img: "/ministry_worship.png", title: "Chaplaincy Services", text: "Providing spiritual support across hospitals, institutions, and organizations where comfort and guidance are needed most." },
+              { img: "/ministry_bible.png", title: "Theological Research", text: "Academic exploration of scripture, the doctrine of the Trinity, and the intersection of faith with the African Christian experience." },
+            ].map((item, i) => (
+              <div key={i} className="group bg-white rounded-lg overflow-hidden shadow-md shadow-black/5 card-hover">
+                <div className="relative h-64 overflow-hidden">
+                  <Image src={item.img} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
-
-                {/* Writing Title */}
-                <h3 className="font-serif text-lg font-bold text-[#1c1c1a] dark:text-[#f4f4f3] leading-snug hover:text-gold-600 dark:hover:text-gold-400 transition-colors">
-                  <Link href={`/writings/${writing.slug}`}>
-                    {writing.title}
-                  </Link>
-                </h3>
-
-                {/* Excerpt */}
-                <p className="text-sm text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans line-clamp-3">
-                  {writing.excerpt}
-                </p>
-
+                <div className="p-8">
+                  <h3 className="font-serif text-xl font-bold text-charcoal mb-3">{item.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{item.text}</p>
+                </div>
               </div>
-
-              <Link
-                href={`/writings/${writing.slug}`}
-                className="mt-6 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gold-600 dark:text-gold-400 hover:text-gold-700 font-sans group"
-              >
-                Read More
-                <ChevronRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </article>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 5. GOSPEL MUSIC SECTION */}
-      <section id="music" className="py-24 px-6 md:px-12 bg-[#fcfbf7] dark:bg-[#0f0f0e] border-t border-gold-500/5 scroll-mt-20">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <span className="text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-            Gospel Music
-          </span>
-          <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3] mt-2">
-            Songs Born From Worship
-          </h2>
-          <div className="w-16 h-[2px] bg-gold-500 mx-auto mt-4"></div>
-        </div>
-
-        {/* Dynamic Video Player Showcase */}
-        {activeVideoId && (
-          <div className="max-w-4xl mx-auto mb-12 rounded-2xl overflow-hidden border border-gold-500/20 shadow-2xl bg-black aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src={activeVideoId}
-              title="Gospel Music Player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            ></iframe>
+      {/* ═══ WRITINGS ═══ */}
+      <section id="writings" className="py-28 px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
+            <div>
+              <span className="section-label">Blog</span>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4">Theological Writings</h2>
+            </div>
+            <Link href="/writings" className="btn-outline-dark">View All Articles</Link>
           </div>
-        )}
-
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          {music.map((track) => (
-            <div 
-              key={track.id} 
-              className={`p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between ${
-                activeVideoId === track.youtube_url 
-                  ? "border-gold-500 bg-gold-500/5 shadow-md shadow-gold-500/5" 
-                  : "border-gold-500/10 bg-[#fcfbf7] dark:bg-[#131312] hover:border-gold-500/30"
-              }`}
-            >
-              <div>
-                
-                {/* Upper row: Track number and languages */}
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-serif text-2xl font-black text-gold-500/20">
-                    0{track.track_number}
-                  </span>
-                  <div className="flex gap-1.5">
-                    {track.language_tags.map(lang => (
-                      <span key={lang} className="text-[10px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/10 text-gold-600 dark:text-gold-400">
-                        {lang}
-                      </span>
-                    ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {writings.map((w) => (
+              <article key={w.id} className="group bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm card-hover">
+                <div className="relative h-52 overflow-hidden bg-gradient-to-br from-gold-100 to-warm-gray">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-6xl opacity-20">📖</span>
+                  </div>
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-block px-3 py-1 bg-gold-500 text-white text-[10px] font-semibold uppercase tracking-widest rounded">
+                      {w.category}
+                    </span>
                   </div>
                 </div>
-
-                {/* Track details */}
-                <h3 className="font-serif text-lg font-bold text-[#1c1c1a] dark:text-[#f4f4f3] mb-2">
-                  {track.title}
-                </h3>
-                <p className="text-xs text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans mb-6">
-                  {track.description}
-                </p>
-
-              </div>
-
-              {/* Action buttons */}
-              {track.youtube_url && (
-                <button
-                  onClick={() => {
-                    // Toggle the player or switch active track
-                    if (activeVideoId === track.youtube_url) {
-                      setActiveVideoId(null);
-                    } else {
-                      setActiveVideoId(track.youtube_url || null);
-                      // Smooth scroll up to player if screen size is small
-                      const playerElement = document.getElementById("music");
-                      if (playerElement) {
-                        playerElement.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }
-                  }}
-                  className={`w-full py-3 rounded-full font-sans text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 ${
-                    activeVideoId === track.youtube_url
-                      ? "bg-gold-600 text-white hover:bg-gold-700"
-                      : "border border-gold-500/30 hover:border-gold-500 text-gold-600 dark:text-gold-400 hover:bg-gold-500/5"
-                  }`}
-                >
-                  <Play size={14} className={activeVideoId === track.youtube_url ? "animate-pulse" : ""} />
-                  {activeVideoId === track.youtube_url ? "Close Player" : "Listen / Watch Video"}
-                </button>
-              )}
-
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. CONTACT CONNECT SECTION */}
-      <section id="contact" className="py-24 px-6 md:px-12 bg-white dark:bg-[#0c0c0b] border-t border-gold-500/5 scroll-mt-20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          
-          {/* Left Column: Wording & Side details */}
-          <div className="lg:col-span-5 space-y-6">
-            <span className="text-xs uppercase tracking-widest font-semibold text-gold-600 dark:text-gold-400 font-sans">
-              Get in Touch
-            </span>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1c1c1a] dark:text-[#f4f4f3]">
-              Let's Connect
-            </h2>
-            <p className="text-base text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 leading-relaxed font-sans">
-              Whether you are seeking ministry collaboration, theological discussion, musical partnership, or simply wish to connect — I would be glad to hear from you. All for the glory of God.
-            </p>
-            
-            <div className="divider-gold my-8 opacity-20"></div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-9 h-9 rounded-full bg-gold-500/10 flex items-center justify-center text-gold-600 dark:text-gold-400">
-                  <FileText size={16} />
-                </div>
-                <div>
-                  <h4 className="text-xs uppercase font-sans tracking-widest font-semibold text-[#1c1c1a]/50 dark:text-[#f4f4f3]/50">Affiliation</h4>
-                  <p className="text-sm font-serif">ZAOGA Forward in Faith Ministries</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Column: Contact form */}
-          <div className="lg:col-span-7">
-            <div className="p-8 md:p-10 rounded-3xl border border-gold-500/10 bg-[#fcfbf7]/40 dark:bg-[#121211]/30 backdrop-blur-xs relative overflow-hidden">
-              
-              {submitSuccess && (
-                <div className="absolute inset-0 bg-[#fcfbf7] dark:bg-[#121211] z-20 flex flex-col items-center justify-center text-center p-8 animate-fade-in">
-                  <CheckCircle size={56} className="text-gold-500 mb-4 animate-bounce" />
-                  <h3 className="font-serif text-2xl font-bold text-[#1c1c1a] dark:text-[#f4f4f3] mb-2">
-                    Message Sent Successfully
+                <div className="p-7 space-y-3">
+                  <div className="flex items-center gap-4 text-[11px] text-gray-400 font-semibold uppercase tracking-widest">
+                    <span>{new Date(w.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    <span>·</span>
+                    <span>{w.reading_time} min read</span>
+                  </div>
+                  <h3 className="font-serif text-lg font-bold text-charcoal leading-snug group-hover:text-gold-600 transition-colors">
+                    <Link href={`/writings/${w.slug}`}>{w.title}</Link>
                   </h3>
-                  <p className="text-sm text-[#1c1c1a]/70 dark:text-[#f4f4f3]/70 font-sans max-w-sm">
-                    Thank you for reaching out. Pastor Laxson Nyamadzawo will review your message and connect back with you soon.
-                  </p>
+                  <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">{w.excerpt}</p>
                 </div>
-              )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <form onSubmit={handleFormSubmit} className="space-y-6">
-                
-                {/* Grid Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="name" className="text-[10px] font-sans uppercase tracking-widest font-semibold text-[#1c1c1a]/60 dark:text-[#f4f4f3]/60">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleFormChange}
-                      placeholder="John Doe"
-                      className="px-4 py-3 rounded-xl border border-gold-500/10 focus:border-gold-500 focus:outline-hidden bg-white/50 dark:bg-zinc-900/50 text-[#1c1c1a] dark:text-[#f4f4f3] font-sans text-sm transition-all"
-                    />
+      {/* ═══ MUSIC ═══ */}
+      <section id="music" className="py-28 px-6 lg:px-8 bg-charcoal text-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="section-label !text-gold-400 before:!bg-gold-400 justify-center">Listen</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mt-4 mb-6">Gospel Praise Music</h2>
+            <p className="text-white/60 leading-relaxed">Congolese rhumba gospel compositions sung in Lingala, Shona, and English — lifting hearts in praise and worship.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {tracks.map((track) => (
+              <div key={track.id} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-gold-500/30 transition-all duration-300">
+                {activeVideo === track.id ? (
+                  <div className="space-y-4">
+                    <div className="aspect-video rounded-lg overflow-hidden">
+                      <iframe src={`https://www.youtube.com/embed/${track.youtube_id}?autoplay=1`} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen title={track.title} />
+                    </div>
+                    <button onClick={() => setActiveVideo(null)} className="text-xs font-semibold uppercase tracking-widest text-gold-400 hover:text-gold-300 cursor-pointer">← Close Player</button>
                   </div>
+                ) : (
+                  <div className="flex items-center gap-5">
+                    <button onClick={() => setActiveVideo(track.id)} className="w-14 h-14 rounded-full bg-gold-500 flex items-center justify-center flex-shrink-0 hover:bg-gold-400 transition-colors cursor-pointer shadow-lg shadow-gold-500/20">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-serif text-lg font-bold text-white truncate">{track.title}</h3>
+                      <p className="text-sm text-white/50 mt-1">{track.language} · {track.description?.substring(0, 60)}...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="email" className="text-[10px] font-sans uppercase tracking-widest font-semibold text-[#1c1c1a]/60 dark:text-[#f4f4f3]/60">
-                      Your Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleFormChange}
-                      placeholder="johndoe@email.com"
-                      className="px-4 py-3 rounded-xl border border-gold-500/10 focus:border-gold-500 focus:outline-hidden bg-white/50 dark:bg-zinc-900/50 text-[#1c1c1a] dark:text-[#f4f4f3] font-sans text-sm transition-all"
-                    />
+      {/* ═══ CONTACT ═══ */}
+      <section id="contact" className="py-28 px-6 lg:px-8 bg-cream">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div className="space-y-8">
+            <span className="section-label">Get In Touch</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
+              We&apos;d Love to<br /><span className="text-gold-600">Hear From You</span>
+            </h2>
+            <p className="text-gray-500 leading-relaxed text-lg">
+              Whether you have questions about ministry, seek pastoral counsel, or would like to connect with Pastor Laxson, please reach out.
+            </p>
+            <div className="space-y-5 pt-4">
+              {[
+                { icon: "📍", label: "Location", value: "Zimbabwe, Southern Africa" },
+                { icon: "✉️", label: "Email", value: "info@laxsonnyamadzawo.com" },
+                { icon: "⛪", label: "Church", value: "ZAOGA Forward in Faith Ministries" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-start gap-4">
+                  <span className="w-12 h-12 rounded-lg bg-gold-500/10 flex items-center justify-center text-xl flex-shrink-0">{item.icon}</span>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-gold-600">{item.label}</span>
+                    <p className="text-charcoal font-medium">{item.value}</p>
                   </div>
                 </div>
-
-                {/* Message input */}
-                <div className="flex flex-col space-y-2">
-                  <label htmlFor="message" className="text-[10px] font-sans uppercase tracking-widest font-semibold text-[#1c1c1a]/60 dark:text-[#f4f4f3]/60">
-                    Your Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={handleFormChange}
-                    placeholder="Write your message here..."
-                    className="px-4 py-3 rounded-xl border border-gold-500/10 focus:border-gold-500 focus:outline-hidden bg-white/50 dark:bg-zinc-900/50 text-[#1c1c1a] dark:text-[#f4f4f3] font-sans text-sm transition-all resize-none"
-                  ></textarea>
-                </div>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-4 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-sans text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-gold-500/10 hover:shadow-gold-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <span>Sending Message...</span>
-                  ) : (
-                    <>
-                      <span>Send Message</span>
-                      <Send size={14} />
-                    </>
-                  )}
-                </button>
-
-              </form>
-
+              ))}
             </div>
           </div>
-
+          <div className="bg-white rounded-lg p-10 shadow-xl shadow-black/5 border border-gray-100">
+            {formSent ? (
+              <div className="flex flex-col items-center justify-center h-full text-center py-16 space-y-4 animate-scale-in">
+                <span className="text-5xl">✅</span>
+                <h3 className="font-serif text-2xl font-bold text-charcoal">Message Sent!</h3>
+                <p className="text-gray-500 text-sm">Thank you for reaching out. Pastor Laxson will respond soon.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <h3 className="font-serif text-2xl font-bold text-charcoal mb-2">Send a Message</h3>
+                {[
+                  { name: "name" as const, label: "Your Name", type: "text" },
+                  { name: "email" as const, label: "Email Address", type: "email" },
+                ].map((field) => (
+                  <div key={field.name}>
+                    <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">{field.label}</label>
+                    <input type={field.type} required value={formData[field.name]} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                      className="w-full px-4 py-3.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/20 transition-all" />
+                  </div>
+                ))}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Message</label>
+                  <textarea rows={5} required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/20 transition-all resize-none" />
+                </div>
+                <button type="submit" className="btn-primary w-full justify-center">Send Message</button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 
