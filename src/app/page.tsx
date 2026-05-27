@@ -1,26 +1,54 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { HeartHandshake, GraduationCap, BookOpen } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { databaseService, Writing, MusicTrack } from "@/lib/supabase";
+import { defaultHomepageContent } from "@/lib/homepage-content";
+import { databaseService } from "@/lib/supabase";
+import { useHomepageContent, useWritings } from "@/lib/data-hooks";
+import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
+import {
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Star,
+  Clock,
+  Search,
+  CalendarCheck,
+  Rocket,
+  User,
+  Video,
+  BookMarkedIcon,
+  PlayCircle,
+  Users,
+  FileText,
+  Award,
+  Check,
+  ArrowUpRight,
+  Bookmark,
+  Play,
+  Headphones,
+  Pause,
+} from "lucide-react";
 
 export default function HomePage() {
-  const [writings, setWritings] = useState<Writing[]>([]);
-  const [tracks, setTracks] = useState<MusicTrack[]>([]);
-  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const { data: homepageData } = useHomepageContent();
+  const { data: writingsData } = useWritings();
+  const { tracks, currentTrack, isPlaying, playTrack } = useMusicPlayer();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [formSent, setFormSent] = useState(false);
-
-  useEffect(() => {
-    databaseService.getWritings().then((d) => setWritings(d.slice(0, 3)));
-    databaseService.getMusicTracks().then(setTracks);
-  }, []);
+  const homepageContent = homepageData || defaultHomepageContent;
+  const writings = (writingsData || []).slice(0, 3);
+  const aboutContent = homepageContent.about;
+  const familyContent = homepageContent.family;
+  const familyProfiles = [familyContent.ethel, familyContent.providence, familyContent.praise];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await databaseService.submitContactMessage(formData);
+    await databaseService.submitMessage(formData.name, formData.email, formData.message);
     setFormSent(true);
     setFormData({ name: "", email: "", message: "" });
     setTimeout(() => setFormSent(false), 4000);
@@ -31,132 +59,655 @@ export default function HomePage() {
       <Navbar />
 
       {/* ═══ HERO ═══ */}
-      <section id="hero" className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
-        <Image src="/hero_church_bg.png" alt="Church sanctuary" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-6 animate-fade-in-up">
-          <span className="inline-flex items-center gap-3 text-gold-300 text-xs font-semibold uppercase tracking-[4px] mb-6">
-            <span className="w-10 h-px bg-gold-400" />Welcome<span className="w-10 h-px bg-gold-400" />
+      {/* High-end app feel: 100dvh ensures perfect fit on mobile browsers. */}
+      <section id="hero" className="relative h-[100dvh] min-h-[600px] flex items-center justify-center overflow-hidden">
+        <Image 
+          src="/images/hero.webp" 
+          alt="Church sanctuary" 
+          fill 
+          sizes="100vw" 
+          className="object-cover scale-105 animate-[pulse_20s_ease-in-out_infinite_alternate]" 
+          priority 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-zaoga-950/40 via-zaoga-950/70 to-zaoga-950/95" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-6 mt-16 animate-fade-in-up">
+          <span className="inline-flex items-center gap-3 text-gold-300 text-[10px] sm:text-xs font-semibold uppercase tracking-[4px] mb-6 opacity-90">
+            <span className="w-8 h-px bg-gradient-to-r from-transparent to-gold-400" />
+            {homepageContent.hero.eyebrow}
+            <span className="w-8 h-px bg-gradient-to-l from-transparent to-gold-400" />
           </span>
-          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
-            Seek First the<br />
-            <span className="text-gold-400">Kingdom of God</span>
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.1] mb-6 tracking-tight">
+            {homepageContent.hero.title}<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-300 to-gold-500">
+              {homepageContent.hero.highlight}
+            </span>
           </h1>
-          <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
-            The ministry of Pastor Laxson Nyamadzawo — shepherding hearts through pastoral care, theological wisdom, and gospel praise.
+          <p className="text-white/80 text-base md:text-xl max-w-2xl mx-auto leading-relaxed mb-10 font-light">
+            {homepageContent.hero.description}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })} className="btn-primary">
-              Discover More
+          
+          {/* Mobile App Touch Targets: Buttons are full width on mobile, inline on desktop */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-4 sm:px-0">
+            <button 
+              onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })} 
+              className="sm:w-auto btn-primary py-4 px-8 rounded-full flex items-center justify-center active:scale-95 transition-transform duration-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-sm"
+            >
+              {homepageContent.hero.primaryCtaLabel}
             </button>
-            <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} className="btn-outline">
-              Get In Touch
-            </button>
+            {/* <Link
+              href="/music"
+              className="w-full sm:w-auto py-3.5 px-7 flex items-center justify-center gap-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-base transition-all duration-200 active:scale-95 group"
+            >
+              <span className="flex gap-[2px] items-end h-3.5">
+                <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.7s_ease-in-out_infinite]" style={{ height: '5px', animationDelay: '0s' }} />
+                <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.7s_ease-in-out_infinite]" style={{ height: '14px', animationDelay: '0.15s' }} />
+                <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.7s_ease-in-out_infinite]" style={{ height: '9px', animationDelay: '0.3s' }} />
+              </span>
+              Listen to Gospel Music
+            </Link> */}
+            <a 
+              href="https://fifmi.org/watch-ezekiel-tv/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="w-full sm:w-auto py-4 px-6 flex items-center justify-center gap-3.5 group transition-all duration-200 active:scale-95"
+            >
+              <img 
+                src="/images/ezekieltvlogo.png" 
+                alt="Ezekiel TV" 
+                className="h-10 w-auto object-contain flex-shrink-0"
+              />
+              <span className="font-semibold text-white/90 group-hover:text-white transition-colors text-base relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-white/50 after:transition-all after:duration-300 group-hover:after:w-full">
+                {homepageContent.hero.secondaryCtaLabel}
+              </span>
+            </a>
           </div>
         </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-white/40 flex items-start justify-center pt-2">
-            <div className="w-1 h-2 bg-white/60 rounded-full" />
-          </div>
+
+        {/* Subtle scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 opacity-70">
+          <div className="w-[1px] h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
         </div>
       </section>
 
       {/* ═══ FEATURE CARDS ═══ */}
-      <section className="relative z-20 -mt-20 px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Mobile App Feel: Horizontal snap-scrolling container instead of a long vertical stack */}
+      <section className="relative z-20 -mt-12 px-0 md:px-8">
+        <div className="max-w-6xl mx-auto flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 px-6 md:px-0 md:grid md:grid-cols-3 gap-4 md:gap-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {[
-            { icon: "🕊️", title: "Pastoral Care", desc: "Shepherding communities with compassion, prayer, and the healing Word of God." },
-            { icon: "🎓", title: "Chaplaincy", desc: "Providing spiritual counsel and support across institutions and organizations." },
-            { icon: "📖", title: "Theological Teaching", desc: "Academic exploration of scripture, doctrine, and the African Christian witness." },
-          ].map((card, i) => (
-            <div key={i} className="bg-white rounded-lg p-8 shadow-lg shadow-black/5 border border-gray-100 card-hover text-center">
-              <span className="text-4xl mb-4 block">{card.icon}</span>
-              <h3 className="font-serif text-xl font-bold text-charcoal mb-3">{card.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{card.desc}</p>
+            { key: "pastoral-care", icon: <HeartHandshake className="w-6 h-6 text-zaoga-600" /> },
+            { key: "chaplaincy", icon: <GraduationCap className="w-6 h-6 text-zaoga-600" /> },
+            { key: "teaching", icon: <BookOpen className="w-6 h-6 text-zaoga-600" /> },
+          ].map(({ key, icon }, i) => {
+            const card = homepageContent.featureCards[i];
+            return (
+            <div 
+              key={key} 
+              className="snap-center shrink-0 w-[85vw] md:w-auto bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] active:scale-[0.98]"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-zaoga-50 flex items-center justify-center mb-6 shadow-inner">
+                {icon}
+              </div>
+              <h3 className="font-serif text-xl font-bold text-charcoal mb-3">{card?.title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{card?.description}</p>
             </div>
-          ))}
+          )})}
+        </div>
+      </section>
+
+      {/* ═══ MUSIC PROMO STRIP ═══ */}
+      <section id="music-preview" className="bg-zaoga-950 relative overflow-hidden">
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-64 rounded-full bg-zaoga-600/20 blur-[80px]" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-56 rounded-full bg-amber-500/10 blur-[80px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-14 md:py-20 relative z-10 flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+
+          {/* Left: Branding */}
+          <div className="flex-1 min-w-0 text-center lg:text-left">
+            <span className="inline-flex items-center gap-2.5 text-amber-400 text-[10px] font-bold uppercase tracking-[3px] mb-4">
+              <Headphones size={13} />
+              {homepageContent.musicPreview.eyebrow}
+            </span>
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 tracking-tight">
+              {homepageContent.musicPreview.title}<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500">
+                {homepageContent.musicPreview.highlight}
+              </span>
+            </h2>
+            <p className="text-white/50 text-sm md:text-base font-light max-w-sm mx-auto lg:mx-0 leading-relaxed mb-8">
+              {homepageContent.musicPreview.description}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 justify-center lg:justify-start">
+              <Link
+                href="/music"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-white text-zaoga-900 font-bold text-sm shadow-xl hover:bg-white/90 active:scale-95 transition-all duration-200"
+              >
+                <Play size={14} className="fill-zaoga-700 text-zaoga-700 ml-[2px]" />
+                {homepageContent.musicPreview.primaryCtaLabel}
+              </Link>
+              <button
+                onClick={() => tracks[0] && playTrack(tracks[0], false)}
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/40 font-semibold text-sm transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                {homepageContent.musicPreview.secondaryCtaLabel}
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Live Track List */}
+          <div className="w-full lg:w-auto lg:flex-1 max-w-lg">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-5 shadow-2xl">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <p className="text-[10px] uppercase tracking-[2px] font-bold text-white/40">Tracks</p>
+                {currentTrack && isPlaying && (
+                  <span className="flex items-center gap-1.5 text-[10px] text-amber-400 font-semibold uppercase tracking-wider">
+                    <span className="flex gap-[2px] items-end h-3">
+                      <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '4px', animationDelay: '0s' }} />
+                      <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '10px', animationDelay: '0.15s' }} />
+                      <span className="w-[2px] rounded-full bg-amber-400 animate-[bounce_0.6s_ease-in-out_infinite]" style={{ height: '7px', animationDelay: '0.3s' }} />
+                    </span>
+                    Now Playing
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                {tracks.map((track) => {
+                  const isActive = currentTrack?.id === track.id;
+                  return (
+                    <button
+                      key={track.id}
+                      onClick={() => playTrack(track, false)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 text-left cursor-pointer active:scale-[0.98] ${
+                        isActive
+                          ? "bg-white/15 border border-white/15"
+                          : "hover:bg-white/8 border border-transparent hover:border-white/5"
+                      }`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+                        <Image
+                          src={track.cover_image_url || "/images/laxon.jpeg"}
+                          alt={track.title}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                        {isActive && isPlaying && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <div className="flex items-end gap-[2px] h-3">
+                              <span className="w-[2px] rounded-full bg-white animate-bounce" style={{ height: '4px', animationDelay: '0.1s' }} />
+                              <span className="w-[2px] rounded-full bg-white animate-bounce" style={{ height: '12px', animationDelay: '0.25s' }} />
+                              <span className="w-[2px] rounded-full bg-white animate-bounce" style={{ height: '7px', animationDelay: '0.15s' }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm truncate transition-colors ${
+                          isActive ? "text-white" : "text-white/75"
+                        }`}>{track.title}</p>
+                        <p className="text-white/35 text-xs truncate mt-0.5">
+                          {track.language_tags.join(" · ")}
+                        </p>
+                      </div>
+
+                      {/* Play/Pause button */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                        isActive && isPlaying
+                          ? "bg-amber-400 shadow-lg shadow-amber-400/30"
+                          : isActive
+                          ? "bg-white/20"
+                          : "bg-white/10"
+                      }`}>
+                        {isActive && isPlaying ? (
+                          <svg className="w-3 h-3 fill-zaoga-900" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                        ) : (
+                          <svg className="w-3 h-3 fill-white ml-[2px]" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-white/8 text-center">
+                <Link
+                  href="/music"
+                  className="text-xs font-semibold text-white/40 hover:text-white/70 transition-colors inline-flex items-center gap-1.5"
+                >
+                  Open full player with lyrics &amp; karaoke mode
+                  <ArrowRight size={11} />
+                </Link>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ═══ ABOUT ═══ */}
-      <section id="about" className="py-28 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="relative animate-fade-in">
-            <div className="relative rounded-lg overflow-hidden shadow-2xl shadow-black/10">
-              <Image src="/about_pastor.png" alt="Pastor Laxson Nyamadzawo" width={600} height={700} className="object-cover w-full" />
+      <section id="about" className="py-20 md:py-28 px-6 lg:px-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="relative order-2 lg:order-1 px-4 sm:px-0">
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-zaoga-900/15 aspect-[4/5] sm:aspect-auto">
+              <Image src={aboutContent.image} alt="Pastor Laxson Nyamadzawo" width={600} height={700} className="object-cover w-full h-full" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </div>
-            <div className="absolute -bottom-6 -right-6 bg-gold-500 text-white px-8 py-5 rounded-lg shadow-lg">
-              <span className="text-3xl font-serif font-bold block">25+</span>
-              <span className="text-xs uppercase tracking-widest font-semibold">Years of Ministry</span>
+            {/* App-like floating badge */}
+            <div className="absolute -bottom-6 -right-2 sm:-right-6 bg-white/90 backdrop-blur-md border border-white/20 text-zaoga-900 px-6 sm:px-8 py-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <span className="text-3xl font-serif font-bold block text-transparent bg-clip-text bg-gradient-to-r from-zaoga-600 to-zaoga-400">{aboutContent.yearsValue}</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">{aboutContent.yearsLabel}</span>
             </div>
           </div>
-          <div className="space-y-6">
-            <span className="section-label">About Pastor Laxson</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
-              A Life Dedicated to<br />
-              <span className="text-gold-600">God&apos;s Purpose</span>
+          <div className="space-y-6 order-1 lg:order-2">
+            <span className="text-zaoga-500 text-xs font-bold uppercase tracking-[3px]">{aboutContent.eyebrow}</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-[1.15] tracking-tight">
+              {aboutContent.title}<br />
+              <span className="text-zaoga-600">{aboutContent.highlight}</span>
             </h2>
-            <p className="text-gray-500 leading-relaxed text-lg">
-              Pastor Laxson Nyamadzawo is a dedicated shepherding minister within <strong className="text-charcoal">ZAOGA Forward in Faith Ministries International</strong>. His calling encompasses pastoral care, hospital and institutional chaplaincy, academic theological writing, and Congolese rhumba gospel songwriting.
-            </p>
-            <p className="text-gray-500 leading-relaxed">
-              Blessed with his partner <strong className="text-gold-700">Runako</strong> and daughters <strong className="text-gold-700">Ethel</strong>, <strong className="text-gold-700">Providence</strong>, and <strong className="text-gold-700">Makanaka Praise</strong>, he serves with a heart anchored in Matthew 6:33.
-            </p>
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              {["Peace of Mind", "Open Hearts", "Faithful Service", "Community Care"].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm font-medium text-charcoal">
-                  <span className="w-2 h-2 bg-gold-500 rounded-full flex-shrink-0" />
+            <div className="space-y-4 text-gray-600 leading-relaxed text-base md:text-lg font-light">
+              {aboutContent.narrative.split("\n\n").map((paragraph, index) => (
+                <p key={`${paragraph.slice(0, 24)}-${index}`} className="whitespace-pre-line">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2 pt-4">
+              {aboutContent.bulletPoints.map((item) => (
+                <div key={item} className="flex items-center gap-3 text-sm font-medium text-charcoal bg-gray-50/50 py-2 px-3 rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-zaoga-400 to-zaoga-600 flex-shrink-0 shadow-sm" />
                   {item}
                 </div>
               ))}
             </div>
-            <button onClick={() => document.getElementById("ministry")?.scrollIntoView({ behavior: "smooth" })} className="btn-outline-dark mt-4">
-              Learn More
+            <button 
+              onClick={() => document.getElementById("ministry")?.scrollIntoView({ behavior: "smooth" })} 
+              className="mt-6 w-full sm:w-auto px-8 py-4 rounded-full border border-gray-200 text-charcoal font-semibold hover:bg-gray-50 active:scale-95 transition-all duration-200"
+            >
+              {aboutContent.ctaLabel}
             </button>
           </div>
         </div>
       </section>
 
-      {/* ═══ FULL-WIDTH CTA BANNER ═══ */}
-      <section className="relative py-24 overflow-hidden">
-        <Image src="/ministry_worship.png" alt="Worship" fill className="object-cover" />
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
-          <span className="section-label !text-gold-300 before:!bg-gold-400">Ways We Can Help</span>
-          <h2 className="font-serif text-4xl md:text-5xl font-bold text-white leading-tight mt-4 mb-6">
-            Bringing Hope Through Faith & Service
+      {/* ═══ FAMILY SECTION (STICKY SCROLL-LAYERS) ═══ */}
+      <section id="family" className="relative bg-zaoga-950 selection:bg-zaoga-500/30">
+
+        {/* Section heading — scrolls away before cards pin */}
+        <div className="max-w-7xl mx-auto px-6 pt-32 pb-24 text-center">
+          <div className="inline-flex items-center gap-2 px-4 pt-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-[11px] font-black uppercase tracking-[0.2em] pb-0 mb-8 backdrop-blur-md">
+           
+            {familyContent.eyebrow}
+          </div>
+          <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-white mb-6 leading-[1.05] tracking-tight">
+            {familyContent.title} <em className="italic text-gold-400 font-light font-serif">{familyContent.highlight}</em>
           </h2>
-          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
-            Whether through pastoral guidance, chaplaincy support, theological teaching, or the unifying power of gospel music — we are here to serve.
+          <p className="text-base md:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed font-light">
+            {familyContent.description}
           </p>
-          <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} className="btn-primary">
-            Contact Pastor Laxson
-          </button>
         </div>
+
+        {/* Cards wrapper — total scroll height = n cards × 100vh */}
+        <div className="relative" style={{ height: "400vh" }}>
+
+          {/* ── CARD 1 : Laxson & Runako (LIGHT THEME) ── */}
+          <div className="sticky top-0 h-screen w-full flex items-center justify-center card-layer" data-card="1">
+            {/* Card Container - Now White */}
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 h-[90vh] sm:h-[85vh] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row shadow-[0_20px_80px_rgba(0,0,0,0.8)] ring-1 ring-white/10 bg-white">
+
+              {/* Background image */}
+              <div className="absolute inset-0 w-full h-full object-cover object-center opacity-95">
+                <Image 
+                  src={familyContent.parents.image} 
+                  alt={familyContent.parents.name} 
+                  fill 
+                  sizes="100vw"
+                  className="object-cover" 
+                />
+              </div>
+              {/* Light Gradients */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/65 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/66 via-transparent to-transparent md:hidden z-10" />
+
+              {/* Left content */}
+              <div className="relative z-20 flex flex-col justify-center p-6 sm:p-10 md:p-16 md:w-1/2 lg:w-[55%] h-full">
+               
+
+                <h3 className="font-serif pt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-slate-900 leading-[1.05] mb-4 sm:mb-6 tracking-tight">
+                  {familyContent.parents.role}
+                </h3>
+
+                <p className="text-slate-800 text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-10 max-w-md font-light">
+                  {familyContent.parents.description}
+                </p>
+
+                {/* Feature pills */}
+                <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-10">
+                  {familyContent.parents.features.map((f) => (
+                    <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 ring-1 ring-slate-200 text-slate-700 text-[11px] sm:text-xs font-medium backdrop-blur-sm">
+                      <Check className="h-3 w-3 text-zaoga-500 flex-shrink-0" />{f}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Stat row */}
+                <div className="flex items-center gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-slate-100">
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyContent.parents.statPrimaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyContent.parents.statPrimaryLabel}</p>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200" />
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyContent.parents.statSecondaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyContent.parents.statSecondaryLabel}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right floating UI card */}
+              <div className="hidden md:flex relative z-20 flex-col justify-center items-end p-10 md:p-16 md:w-1/2 lg:w-[45%] gap-6">
+                <div className="w-80 bg-white/80 backdrop-blur-2xl ring-1 ring-slate-200 rounded-3xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-transform hover:-translate-y-2 duration-500">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-zaoga-50 flex items-center justify-center flex-shrink-0">
+                      <HeartHandshake className="h-4 w-4 text-zaoga-600" />
+                    </div>
+                    <div>
+                      <p className="text-slate-900 text-sm font-medium tracking-wide">District Counseling</p>
+                      <p className="text-slate-500 text-xs mt-0.5">Today · 4:00 PM · Chilenje</p>
+                    </div>
+                  </div>
+                  <div className="w-full h-1 bg-slate-100 rounded-full mb-3 overflow-hidden">
+                    <div className="h-full w-full bg-zaoga-500 rounded-full" />
+                  </div>
+                  <p className="text-slate-500 text-[11px] uppercase tracking-wider font-bold">{familyContent.parents.badge}</p>
+                </div>
+              </div>
+
+              {/* Card number */}
+              <div className="absolute bottom-6 right-8 sm:bottom-10 sm:right-12 text-slate-900/5 font-serif font-bold text-6xl sm:text-8xl select-none pointer-events-none leading-none italic z-20">01</div>
+            </div>
+          </div>
+
+          {/* ── CARD 2 : Ethel (WHITE + RIGHT IMAGE PANEL) ── */}
+          <div className="sticky top-0 h-screen w-full flex items-center justify-center card-layer" data-card="2">
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 h-[90vh] sm:h-[85vh] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row shadow-[0_20px_80px_rgba(0,0,0,0.12)] ring-1 ring-slate-100 bg-white">
+
+              {/* ── Mobile Portrait Banner ── */}
+              <div className="relative md:hidden w-full h-[42%] flex-shrink-0 bg-slate-100">
+                <Image src={familyProfiles[0].image || "/images/ethel.jpg"} alt={familyProfiles[0].name} fill sizes="100vw" className="object-cover object-top" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-5">
+                  <p className="text-white font-serif text-lg font-semibold">{familyProfiles[0].name}</p>
+                  <p className="text-white/70 text-[11px] tracking-wide line-clamp-1">{familyProfiles[0].credentials}</p>
+                </div>
+              </div>
+
+              {/* ── Left: Editorial Content ── */}
+              <div className="relative z-20 flex flex-col justify-center overflow-y-hidden p-5 sm:p-10 md:p-14 md:w-[52%] md:h-full">
+                
+
+                <h3 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] text-slate-900 leading-[1.05] mb-4 sm:mb-6 tracking-tight">
+                  {familyProfiles[0].role}
+                </h3>
+
+                <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-6 sm:mb-10 max-w-md font-light">
+                  {familyProfiles[0].description}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-8 sm:mb-10">
+                  {familyProfiles[0].features.map((f) => (
+                    <span key={f} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 ring-1 ring-slate-200 text-slate-600 text-[11px] sm:text-xs font-medium">
+                      <Check className="h-3 w-3 text-zaoga-500 flex-shrink-0" />{f}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-slate-100">
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyProfiles[0].statPrimaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyProfiles[0].statPrimaryLabel}</p>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200" />
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyProfiles[0].statSecondaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyProfiles[0].statSecondaryLabel}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Right: Portrait Image Panel ── */}
+              <div className="hidden md:flex md:w-[48%] relative items-center justify-center p-6 lg:p-10 bg-slate-50">
+                {/* Decorative blobs */}
+                <div className="absolute top-10 right-10 w-48 h-48 rounded-full bg-zaoga-100/60 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-16 left-6 w-32 h-32 rounded-full bg-gold-100/50 blur-2xl pointer-events-none" />
+
+                {/* Portrait frame */}
+                <div className="relative w-full max-w-[320px] h-[72%] rounded-[1.75rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.15)] ring-1 ring-slate-200 group">
+                  <Image
+                    src={familyProfiles[0].image || "/images/ethel.jpg"}
+                    alt={familyProfiles[0].name}
+                    fill
+                    sizes="320px"
+                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Subtle bottom name badge */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-5 pt-12">
+                    <p className="text-white font-serif text-xl font-semibold leading-tight">{familyProfiles[0].name}</p>
+                    <p className="text-white/70 text-xs font-medium tracking-wide mt-0.5">{familyProfiles[0].badge}</p>
+                  </div>
+                </div>
+
+                {/* Floating credential badge */}
+                <div className="absolute top-8 left-8 bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 px-4 py-3 max-w-[240px]">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Degree / Status</p>
+                  <p className="text-slate-800 text-xs font-semibold leading-normal">{familyProfiles[0].credentials}</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-6 right-8 sm:bottom-10 sm:right-12 text-slate-900/[0.04] font-serif font-bold text-6xl sm:text-8xl select-none pointer-events-none leading-none italic z-20">02</div>
+            </div>
+          </div>
+
+          {/* ── CARD 3 : Providence (WHITE + LEFT IMAGE PANEL) ── */}
+          <div className="sticky top-0 h-screen w-full flex items-center justify-center card-layer" data-card="3">
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 h-[90vh] sm:h-[85vh] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row-reverse shadow-[0_20px_80px_rgba(0,0,0,0.12)] ring-1 ring-slate-100 bg-white">
+
+              {/* ── Mobile Portrait Banner ── */}
+              <div className="relative md:hidden w-full h-[42%] flex-shrink-0 bg-slate-100">
+                <Image src={familyProfiles[1].image || "/images/popo.jpg"} alt={familyProfiles[1].name} fill sizes="100vw" className="object-cover object-top" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-5">
+                  <p className="text-white font-serif text-lg font-semibold">{familyProfiles[1].name}</p>
+                  <p className="text-white/70 text-[11px] tracking-wide line-clamp-1">{familyProfiles[1].credentials}</p>
+                </div>
+              </div>
+
+              {/* ── Right: Editorial Content ── */}
+              <div className="relative z-20 flex flex-col justify-center overflow-y-hidden p-5 sm:p-10 md:p-14 md:w-[52%] md:h-full">
+                
+
+                <h3 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] text-slate-900 leading-[1.05] mb-4 sm:mb-6 tracking-tight">
+                  {familyProfiles[1].role}
+                </h3>
+
+                <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-6 sm:mb-10 max-w-md font-light">
+                  {familyProfiles[1].description}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-8 sm:mb-10">
+                  {familyProfiles[1].features.map((label, index) => (
+                    <div key={label} className={`flex items-center justify-center px-4 py-2 rounded-full ring-1 text-[11px] sm:text-xs font-medium transition-colors ${index % 2 === 0 ? "bg-zaoga-50 ring-zaoga-200 text-zaoga-700" : "bg-slate-50 ring-slate-200 text-slate-600"}`}>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-slate-100">
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyProfiles[1].statPrimaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyProfiles[1].statPrimaryLabel}</p>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200" />
+                  <div>
+                    <p className="text-xl sm:text-2xl font-semibold text-slate-900">{familyProfiles[1].statSecondaryValue}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{familyProfiles[1].statSecondaryLabel}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Left: Portrait Image Panel ── */}
+              <div className="hidden md:flex md:w-[48%] relative items-center justify-center p-6 lg:p-10 bg-slate-50">
+                {/* Decorative blobs */}
+                <div className="absolute top-12 left-10 w-48 h-48 rounded-full bg-gold-100/60 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-14 right-8 w-32 h-32 rounded-full bg-zaoga-100/50 blur-2xl pointer-events-none" />
+
+                {/* Portrait frame */}
+                <div className="relative w-full max-w-[320px] h-[72%] rounded-[1.75rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.15)] ring-1 ring-slate-200 group">
+                  <Image
+                    src={familyProfiles[1].image || "/images/popo.jpg"}
+                    alt={familyProfiles[1].name}
+                    fill
+                    sizes="320px"
+                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-5 pt-12">
+                    <p className="text-white font-serif text-xl font-semibold leading-tight">{familyProfiles[1].name}</p>
+                    <p className="text-white/70 text-xs font-medium tracking-wide mt-0.5">{familyProfiles[1].badge}</p>
+                  </div>
+                </div>
+
+                {/* Floating credential badge */}
+                <div className="absolute top-8 right-8 bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 px-4 py-3 max-w-[240px]">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Degree / Status</p>
+                  <p className="text-slate-800 text-xs font-semibold leading-normal">{familyProfiles[1].credentials}</p>
+                </div>
+
+                {/* Star badge */}
+                <div className="absolute bottom-8 right-8 bg-white rounded-2xl shadow-lg ring-1 ring-slate-100 px-4 py-3 flex items-center gap-2">
+                  <Star className="h-3.5 w-3.5 text-gold-500" fill="currentColor" />
+                  <p className="text-slate-800 text-xs font-semibold">{familyProfiles[1].badge}</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-6 right-8 sm:bottom-10 sm:right-12 text-slate-900/[0.04] font-serif font-bold text-6xl sm:text-8xl select-none pointer-events-none leading-none italic z-20">03</div>
+            </div>
+          </div>
+
+          {/* ── CARD 4 : Makanaka Praise (WARM CREAM + RIGHT IMAGE PANEL) ── */}
+          <div className="sticky top-0 h-screen w-full flex items-center justify-center card-layer" data-card="4">
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 h-[90vh] sm:h-[85vh] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row shadow-[0_20px_80px_rgba(0,0,0,0.12)] ring-1 ring-slate-100 bg-[#FDFBF7]">
+
+              {/* ── Mobile Portrait Banner ── */}
+              <div className="relative md:hidden w-full h-[42%] flex-shrink-0 bg-amber-50">
+                <Image src={familyProfiles[2].image || "/images/praise.jpg"} alt={familyProfiles[2].name} fill sizes="100vw" className="object-cover object-top" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute bottom-3 left-5">
+                  <p className="text-white font-serif text-lg font-semibold">{familyProfiles[2].name}</p>
+                  <p className="text-white/70 text-[11px] tracking-wide line-clamp-1">{familyProfiles[2].credentials}</p>
+                </div>
+              </div>
+
+              {/* ── Left: Editorial Content ── */}
+              <div className="relative z-20 flex flex-col justify-center p-5 sm:p-10 md:p-14 md:w-[52%] md:h-full">
+                
+
+                <h3 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] text-slate-900 leading-[1.05] mb-4 sm:mb-6 tracking-tight">
+                  {familyProfiles[2].role}
+                </h3>
+
+                <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-6 sm:mb-10 max-w-md font-light">
+                  {familyProfiles[2].description}
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-8 sm:mb-10">
+                  {[
+                    { exam: "Praises", lift: "Shona & Lingala", label: "Daily worship languages" },
+                    { exam: "Rhythm", lift: "Rhumba Gospel", label: "Gospel song style" },
+                  ].map(({ exam, lift, label }) => (
+                    <div key={exam} className="bg-white ring-1 ring-slate-100 rounded-2xl p-4 sm:p-5 text-center shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                      <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">{exam}</p>
+                      <p className="text-lg sm:text-xl font-semibold text-slate-900 leading-tight mb-1">{lift}</p>
+                      <p className="text-[10px] text-slate-400 font-medium leading-snug">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-start sm:items-center gap-4 pt-6 sm:pt-8 border-t border-slate-100">
+                  <Award className="h-5 w-5 text-gold-500 mt-0.5 sm:mt-0 flex-shrink-0" />
+                  <p className="text-slate-500 text-xs sm:text-sm font-light">
+                    <span className="text-slate-800 font-medium">As for me and my house</span>, we will serve the Lord. — Joshua 24:15
+                  </p>
+                </div>
+              </div>
+
+              {/* ── Right: Portrait Image Panel ── */}
+              <div className="hidden md:flex md:w-[48%] relative items-center justify-center p-6 lg:p-10 bg-[#F5F0E8]">
+                {/* Decorative blobs */}
+                <div className="absolute top-10 right-10 w-56 h-56 rounded-full bg-gold-200/40 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-16 left-6 w-36 h-36 rounded-full bg-zaoga-100/30 blur-2xl pointer-events-none" />
+
+                {/* Portrait frame */}
+                <div className="relative w-full max-w-[320px] h-[72%] rounded-[1.75rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.12)] ring-1 ring-amber-200/60 group">
+                  <Image
+                    src={familyProfiles[2].image || "/images/praise.jpg"}
+                    alt={familyProfiles[2].name}
+                    fill
+                    sizes="320px"
+                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-5 pt-12">
+                    <p className="text-white font-serif text-xl font-semibold leading-tight">{familyProfiles[2].name}</p>
+                    <p className="text-white/70 text-xs font-medium tracking-wide mt-0.5">{familyProfiles[2].badge}</p>
+                  </div>
+                </div>
+
+                {/* Floating name-meaning badge */}
+                <div className="absolute top-8 left-8 bg-white rounded-2xl shadow-lg ring-1 ring-amber-100 px-4 py-3 max-w-[240px]">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Degree / Status</p>
+                  <p className="text-slate-800 text-xs font-semibold leading-normal">{familyProfiles[2].credentials}</p>
+                </div>
+
+                {/* Music badge */}
+                <div className="absolute bottom-8 left-8 bg-white rounded-2xl shadow-lg ring-1 ring-amber-100 px-4 py-3 flex items-center gap-2">
+                  <PlayCircle className="h-3.5 w-3.5 text-gold-500" />
+                  <p className="text-slate-800 text-xs font-semibold">{familyProfiles[2].badge}</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-6 left-8 sm:bottom-10 sm:left-12 text-slate-900/[0.04] font-serif font-bold text-6xl sm:text-8xl select-none pointer-events-none leading-none italic z-20">04</div>
+            </div>
+          </div>
+
+
+        </div>{/* end cards-wrapper */}
       </section>
 
       {/* ═══ MINISTRY AREAS ═══ */}
-      <section id="ministry" className="py-28 px-6 lg:px-8 bg-cream">
+      <section id="ministry" className="py-24 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="section-label justify-center">Service</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4 mb-6">Areas of Ministry</h2>
-            <p className="text-gray-500 leading-relaxed">Serving the body of Christ through diverse and impactful areas of spiritual ministry.</p>
+          <div className="text-center max-w-2xl mx-auto mb-12 px-6">
+            <span className="text-zaoga-500 text-xs font-bold uppercase tracking-[3px]">{homepageContent.ministry.eyebrow}</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4 mb-4 tracking-tight">{homepageContent.ministry.title}</h2>
+            <p className="text-gray-500 leading-relaxed font-light">{homepageContent.ministry.description}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { img: "/about_pastor.png", title: "Pastoral Care", text: "Walking alongside believers through seasons of joy and trial with prayer, counsel, and unwavering presence." },
-              { img: "/ministry_worship.png", title: "Chaplaincy Services", text: "Providing spiritual support across hospitals, institutions, and organizations where comfort and guidance are needed most." },
-              { img: "/ministry_bible.png", title: "Theological Research", text: "Academic exploration of scripture, the doctrine of the Trinity, and the intersection of faith with the African Christian experience." },
-            ].map((item, i) => (
-              <div key={i} className="group bg-white rounded-lg overflow-hidden shadow-md shadow-black/5 card-hover">
-                <div className="relative h-64 overflow-hidden">
-                  <Image src={item.img} alt={item.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          
+          {/* Mobile App Feel: Horizontal Swiping Cards */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar px-6 pb-12 gap-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-3 md:px-8">
+            {homepageContent.ministry.items.map((item, i) => (
+              <div key={i} className="snap-center shrink-0 w-[85vw] md:w-auto group bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 active:scale-[0.98] transition-transform duration-300">
+                <div className="relative h-56 md:h-64 overflow-hidden">
+                  <Image src={item.img} alt={item.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+                  <h3 className="absolute bottom-5 left-6 right-6 font-serif text-2xl font-bold text-white tracking-wide">{item.title}</h3>
                 </div>
-                <div className="p-8">
-                  <h3 className="font-serif text-xl font-bold text-charcoal mb-3">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.text}</p>
+                <div className="p-6 md:p-8">
+                  <p className="text-sm md:text-base text-gray-500 leading-relaxed font-light">{item.text}</p>
                 </div>
               </div>
             ))}
@@ -164,134 +715,225 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ WRITINGS ═══ */}
-      <section id="writings" className="py-28 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
-            <div>
-              <span className="section-label">Blog</span>
-              <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4">Theological Writings</h2>
-            </div>
-            <Link href="/writings" className="btn-outline-dark">View All Articles</Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {writings.map((w) => (
-              <article key={w.id} className="group bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm card-hover">
-                <div className="relative h-52 overflow-hidden bg-gradient-to-br from-gold-100 to-warm-gray">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-6xl opacity-20">📖</span>
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-block px-3 py-1 bg-gold-500 text-white text-[10px] font-semibold uppercase tracking-widest rounded">
-                      {w.category}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-7 space-y-3">
-                  <div className="flex items-center gap-4 text-[11px] text-gray-400 font-semibold uppercase tracking-widest">
-                    <span>{new Date(w.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                    <span>·</span>
-                    <span>{w.reading_time} min read</span>
-                  </div>
-                  <h3 className="font-serif text-lg font-bold text-charcoal leading-snug group-hover:text-gold-600 transition-colors">
-                    <Link href={`/writings/${w.slug}`}>{w.title}</Link>
-                  </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">{w.excerpt}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ═══ MUSIC PLAYER (App Interface Style) ═══ */}
+      <section id="music" className="py-24 bg-zaoga-950 text-white relative overflow-hidden">
+        {/* Soft Ambient App Glows */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-zaoga-600/20 blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-gold-600/10 blur-[100px] pointer-events-none" />
 
-      {/* ═══ MUSIC ═══ */}
-      <section id="music" className="py-28 px-6 lg:px-8 bg-charcoal text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="section-label !text-gold-400 before:!bg-gold-400 justify-center">Listen</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mt-4 mb-6">Gospel Praise Music</h2>
-            <p className="text-white/60 leading-relaxed">Congolese rhumba gospel compositions sung in Lingala, Shona, and English — lifting hearts in praise and worship.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {tracks.map((track) => (
-              <div key={track.id} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-gold-500/30 transition-all duration-300">
-                {activeVideo === track.id ? (
-                  <div className="space-y-4">
-                    <div className="aspect-video rounded-lg overflow-hidden">
-                      <iframe src={`https://www.youtube.com/embed/${track.youtube_id}?autoplay=1`} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen title={track.title} />
-                    </div>
-                    <button onClick={() => setActiveVideo(null)} className="text-xs font-semibold uppercase tracking-widest text-gold-400 hover:text-gold-300 cursor-pointer">← Close Player</button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-5">
-                    <button onClick={() => setActiveVideo(track.id)} className="w-14 h-14 rounded-full bg-gold-500 flex items-center justify-center flex-shrink-0 hover:bg-gold-400 transition-colors cursor-pointer shadow-lg shadow-gold-500/20">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-serif text-lg font-bold text-white truncate">{track.title}</h3>
-                      <p className="text-sm text-white/50 mt-1">{track.language} · {track.description?.substring(0, 60)}...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ CONTACT ═══ */}
-      <section id="contact" className="py-28 px-6 lg:px-8 bg-cream">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
-          <div className="space-y-8">
-            <span className="section-label">Get In Touch</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
-              We&apos;d Love to<br /><span className="text-gold-600">Hear From You</span>
-            </h2>
-            <p className="text-gray-500 leading-relaxed text-lg">
-              Whether you have questions about ministry, seek pastoral counsel, or would like to connect with Pastor Laxson, please reach out.
+        <div className="max-w-3xl mx-auto relative z-10 px-6">
+          <div className="text-center mb-12">
+            <span className="text-gold-400 text-xs font-bold uppercase tracking-[3px]">{homepageContent.musicSection.eyebrow}</span>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mt-4 mb-4 tracking-tight">{homepageContent.musicSection.title}</h2>
+            <p className="text-white/60 font-light text-sm md:text-base">
+              {homepageContent.musicSection.description}
             </p>
-            <div className="space-y-5 pt-4">
-              {[
-                { icon: "📍", label: "Location", value: "Zimbabwe, Southern Africa" },
-                { icon: "✉️", label: "Email", value: "info@laxsonnyamadzawo.com" },
-                { icon: "⛪", label: "Church", value: "ZAOGA Forward in Faith Ministries" },
-              ].map((item) => (
-                <div key={item.label} className="flex items-start gap-4">
-                  <span className="w-12 h-12 rounded-lg bg-gold-500/10 flex items-center justify-center text-xl flex-shrink-0">{item.icon}</span>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-4 md:p-6 shadow-2xl">
+            <div className="space-y-2">
+              {tracks.map((track) => {
+                const isActive = currentTrack?.id === track.id;
+                return (
+                  <div
+                    key={track.id}
+                    onClick={() => playTrack(track, false)}
+                    className={`w-full text-left flex items-center justify-between p-3 md:p-4 rounded-2xl transition-all duration-200 cursor-pointer active:scale-[0.98] ${
+                      isActive
+                        ? "bg-white/15 shadow-inner border border-white/10"
+                        : "hover:bg-white/5 border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+                        <Image
+                          src={track.cover_image_url || "/images/laxon.jpeg"}
+                          alt={track.title}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                        {isActive && isPlaying && (
+                          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
+                            <div className="flex items-end gap-[3px] h-4">
+                              <span className="w-1 bg-white animate-bounce h-2 rounded-full" style={{ animationDelay: "0.1s" }} />
+                              <span className="w-1 bg-white animate-bounce h-4 rounded-full" style={{ animationDelay: "0.3s" }} />
+                              <span className="w-1 bg-white animate-bounce h-3 rounded-full" style={{ animationDelay: "0.2s" }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 pr-4">
+                        <h4 className={`font-semibold text-base md:text-lg truncate transition-colors ${
+                          isActive ? "text-white" : "text-white/90"
+                        }`}>
+                          {track.title}
+                        </h4>
+                        <p className="text-xs md:text-sm text-white/50 truncate mt-0.5 font-light">{track.description}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center flex-shrink-0 pr-2">
+                      <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all ${
+                        isActive ? "bg-white text-zaoga-900 shadow-[0_0_20px_rgba(255,255,255,0.3)]" : "bg-white/10 text-white hover:bg-white/20"
+                      }`}>
+                        {isActive && isPlaying ? (
+                          <svg className="w-4 h-4 md:w-5 md:h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        ) : (
+                          <svg className="w-4 h-4 md:w-5 md:h-5 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-white/10 text-center">
+               <Link href="/music" className="text-sm font-semibold text-white/80 hover:text-white transition-colors py-2 px-4 rounded-full hover:bg-white/5 active:scale-95 inline-block">
+                 {homepageContent.musicSection.ctaLabel} →
+               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ WRITINGS (App Style Carousel) ═══ */}
+      <section id="writings" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 px-6 lg:px-8">
+            <div>
+              <span className="text-zaoga-500 text-xs font-bold uppercase tracking-[3px]">{homepageContent.writingsSection.eyebrow}</span>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4 tracking-tight">{homepageContent.writingsSection.title}</h2>
+              <p className="mt-4 max-w-xl text-sm text-gray-500">{homepageContent.writingsSection.description}</p>
+            </div>
+            <Link href="/writings" className="hidden md:inline-flex px-6 py-3 rounded-full border border-gray-200 text-sm font-semibold text-charcoal hover:bg-gray-50 transition-colors">
+              {homepageContent.writingsSection.ctaLabel}
+            </Link>
+          </div>
+
+          <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar px-6 pb-8 gap-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-3 md:px-8">
+            {writings.map((w) => (
+              <Link key={w.id} href={`/writings/${w.slug}`} className="snap-center shrink-0 w-[80vw] md:w-auto group block active:scale-[0.98] transition-transform">
+                <article className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] h-full flex flex-col">
+                  <div className="relative h-48 overflow-hidden bg-gray-50">
+                    {w.cover_image_url ? (
+                      <Image 
+                        src={w.cover_image_url} 
+                        alt={w.title} 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-zaoga-50 to-white flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
+                        <span className="text-6xl opacity-10">📖</span>
+                      </div>
+                    )}
+                    <div className="absolute top-4 left-4">
+                      <span className="inline-block px-3 py-1 bg-white/90 backdrop-blur text-zaoga-700 text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm">
+                        {w.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6 md:p-8 flex-1 flex flex-col">
+                    <div className="flex items-center gap-3 text-[11px] text-gray-400 font-semibold uppercase tracking-widest mb-3">
+                      <span>{new Date(w.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <span className="w-1 h-1 rounded-full bg-gray-300" />
+                      <span>{w.reading_time} min</span>
+                    </div>
+                    <h3 className="font-serif text-xl font-bold text-charcoal leading-snug mb-3 group-hover:text-zaoga-600 transition-colors">
+                      {w.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 font-light mt-auto">{w.excerpt}</p>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile view all button */}
+          <div className="px-6 mt-2 md:hidden">
+            <Link href="/writings" className="block w-full text-center px-6 py-4 rounded-full border border-gray-200 text-sm font-semibold text-charcoal active:bg-gray-50">
+              {homepageContent.writingsSection.ctaLabel}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ CONTACT (High-End Forms) ═══ */}
+      <section id="contact" className="py-24 bg-[#FAFAFA] px-6 lg:px-8 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-8 px-2">
+            <div>
+              <span className="text-zaoga-500 text-xs font-bold uppercase tracking-[3px]">{homepageContent.contact.eyebrow}</span>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mt-4 mb-4 tracking-tight">
+                {homepageContent.contact.title} <span className="text-zaoga-600">{homepageContent.contact.highlight}</span>
+              </h2>
+              <p className="text-gray-500 leading-relaxed text-base md:text-lg font-light">
+                {homepageContent.contact.description}
+              </p>
+            </div>
+            
+            <div className="space-y-6 pt-4">
+              {homepageContent.contact.items.map((item) => (
+                <div key={item.label} className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-gray-100 flex items-center justify-center text-xl flex-shrink-0">
+                    {item.icon}
+                  </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase tracking-widest text-gold-600">{item.label}</span>
+                    <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{item.label}</span>
                     <p className="text-charcoal font-medium">{item.value}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="bg-white rounded-lg p-10 shadow-xl shadow-black/5 border border-gray-100">
+
+          <div className="bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden">
             {formSent ? (
-              <div className="flex flex-col items-center justify-center h-full text-center py-16 space-y-4 animate-scale-in">
-                <span className="text-5xl">✅</span>
-                <h3 className="font-serif text-2xl font-bold text-charcoal">Message Sent!</h3>
-                <p className="text-gray-500 text-sm">Thank you for reaching out. Pastor Laxson will respond soon.</p>
+              <div className="flex flex-col items-center justify-center text-center py-20 space-y-4 animate-fade-in-up">
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-4xl">✅</span>
+                </div>
+                <h3 className="font-serif text-3xl font-bold text-charcoal tracking-tight">{homepageContent.contact.successTitle}</h3>
+                <p className="text-gray-500 font-light">{homepageContent.contact.successMessage}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <h3 className="font-serif text-2xl font-bold text-charcoal mb-2">Send a Message</h3>
-                {[
-                  { name: "name" as const, label: "Your Name", type: "text" },
-                  { name: "email" as const, label: "Email Address", type: "email" },
-                ].map((field) => (
-                  <div key={field.name}>
-                    <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">{field.label}</label>
-                    <input type={field.type} required value={formData[field.name]} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                      className="w-full px-4 py-3.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/20 transition-all" />
+                <h3 className="font-serif text-2xl font-bold text-charcoal mb-4">{homepageContent.contact.formTitle}</h3>
+                <div className="space-y-5">
+                  {[
+                    { name: "name" as const, label: "Your Name", type: "text", placeholder: "John Doe" },
+                    { name: "email" as const, label: "Email Address", type: "email", placeholder: "john@example.com" },
+                  ].map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-1">{field.label}</label>
+                      <input 
+                        type={field.type} 
+                        required 
+                        placeholder={field.placeholder}
+                        value={formData[field.name]} 
+                        onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                        className="w-full px-5 py-4 bg-gray-50 border-transparent rounded-2xl text-sm focus:outline-none focus:bg-white focus:border-zaoga-500 focus:ring-4 focus:ring-zaoga-500/10 transition-all placeholder:text-gray-300" 
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2 pl-1">Message</label>
+                    <textarea 
+                      rows={4} 
+                      required 
+                      placeholder="How can we help you?"
+                      value={formData.message} 
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className="w-full px-5 py-4 bg-gray-50 border-transparent rounded-2xl text-sm focus:outline-none focus:bg-white focus:border-zaoga-500 focus:ring-4 focus:ring-zaoga-500/10 transition-all resize-none placeholder:text-gray-300" 
+                    />
                   </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Message</label>
-                  <textarea rows={5} required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500/20 transition-all resize-none" />
                 </div>
-                <button type="submit" className="btn-primary w-full justify-center">Send Message</button>
+                <button type="submit" className="w-full btn-primary py-4 rounded-full font-semibold active:scale-[0.98] transition-transform duration-200 mt-2 shadow-lg shadow-zaoga-500/20">
+                  Send Message
+                </button>
               </form>
             )}
           </div>

@@ -1,24 +1,24 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { databaseService, Writing } from "@/lib/supabase";
 
 export default function WritingsHub() {
   const [allWritings, setAllWritings] = useState<Writing[]>([]);
-  const [filtered, setFiltered] = useState<Writing[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const categories = ["All", "Doctrine", "Ministry", "Resources", "Reflection"];
 
-  useEffect(() => { databaseService.getWritings().then((d) => { setAllWritings(d); setFiltered(d); }); }, []);
+  useEffect(() => { databaseService.getWritings().then(setAllWritings); }, []);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     let result = allWritings;
     if (category !== "All") result = result.filter((w) => w.category === category);
     if (search.trim()) { const q = search.toLowerCase(); result = result.filter((w) => w.title.toLowerCase().includes(q) || w.excerpt.toLowerCase().includes(q)); }
-    setFiltered(result);
+    return result;
   }, [search, category, allWritings]);
 
   return (
@@ -44,13 +44,13 @@ export default function WritingsHub() {
               {categories.map((c) => (
                 <button key={c} onClick={() => setCategory(c)}
                   className={`px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-all cursor-pointer ${
-                    category === c ? "bg-gold-500 text-white border-gold-500" : "border-gray-200 text-gray-500 hover:border-gold-400 hover:text-gold-600"
+                    category === c ? "bg-zaoga-500 text-white border-zaoga-500" : "border-gray-200 text-gray-500 hover:border-zaoga-400 hover:text-zaoga-600"
                   }`}>{c}</button>
               ))}
             </div>
             <div className="relative w-full md:w-72">
               <input type="text" placeholder="Search writings..." value={search} onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gold-500 transition-all" />
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-zaoga-500 transition-all" />
               <svg className="absolute left-3 top-3.5 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </div>
           </div>
@@ -60,19 +60,31 @@ export default function WritingsHub() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filtered.map((w) => (
                 <article key={w.id} className="bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm card-hover group">
-                  <div className="relative h-48 bg-gradient-to-br from-gold-100 to-warm-gray flex items-center justify-center">
-                    <span className="text-5xl opacity-20">📖</span>
-                    <div className="absolute top-4 left-4"><span className="px-3 py-1 bg-gold-500 text-white text-[10px] font-semibold uppercase tracking-widest rounded">{w.category}</span></div>
+                  <div className="relative h-48 overflow-hidden bg-gray-50 flex items-center justify-center">
+                    {w.cover_image_url ? (
+                      <Image 
+                        src={w.cover_image_url} 
+                        alt={w.title} 
+                        fill 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-zaoga-100 to-white flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
+                        <span className="text-5xl opacity-20">📖</span>
+                      </div>
+                    )}
+                    <div className="absolute top-4 left-4"><span className="px-3 py-1 bg-zaoga-500 text-white text-[10px] font-semibold uppercase tracking-widest rounded">{w.category}</span></div>
                   </div>
                   <div className="p-7 space-y-3">
                     <div className="flex items-center gap-3 text-[11px] text-gray-400 font-semibold uppercase tracking-widest">
                       <span>{w.reading_time} min read</span>
                     </div>
-                    <h3 className="font-serif text-lg font-bold text-charcoal leading-snug group-hover:text-gold-600 transition-colors">
+                    <h3 className="font-serif text-lg font-bold text-charcoal leading-snug group-hover:text-zaoga-600 transition-colors">
                       <Link href={`/writings/${w.slug}`}>{w.title}</Link>
                     </h3>
                     <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">{w.excerpt}</p>
-                    <Link href={`/writings/${w.slug}`} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gold-600 hover:text-gold-700 mt-2 group/link">
+                    <Link href={`/writings/${w.slug}`} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-zaoga-600 hover:text-zaoga-700 mt-2 group/link">
                       Read Article <span className="group-hover/link:translate-x-1 transition-transform">→</span>
                     </Link>
                   </div>

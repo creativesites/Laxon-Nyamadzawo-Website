@@ -45,42 +45,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-serif text-lg font-bold transition-all duration-300 ${
-                scrolled
-                  ? "bg-gold-500 text-white"
-                  : "bg-white/20 backdrop-blur-sm text-white border border-white/30"
-              }`}
-            >
-              L
-            </div>
-            <div className="flex flex-col">
-              <span
-                className={`font-serif text-lg font-bold tracking-wide transition-colors duration-300 ${
-                  scrolled ? "text-charcoal" : "text-white"
-                }`}
-              >
-                Laxson Nyamadzawo
-              </span>
-              <span
-                className={`text-[10px] font-semibold uppercase tracking-[3px] transition-colors duration-300 ${
-                  scrolled ? "text-gold-600" : "text-gold-300"
-                }`}
-              >
-                Pastor & Theologian
-              </span>
-            </div>
+          <Link href="/" className="block">
+            <img
+              src="/images/logo-horizontal.png"
+              alt="Laxson Nyamadzawo"
+              className="h-14 md:h-18 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) =>
               link.href ? (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`text-[13px] font-semibold uppercase tracking-[2px] transition-colors duration-300 hover:text-gold-500 ${
+                  className={`text-[12px] font-semibold uppercase tracking-[2px] transition-colors duration-300 hover:text-zaoga-500 ${
                     scrolled ? "text-charcoal/80" : "text-white/90"
                   }`}
                 >
@@ -90,7 +70,7 @@ export default function Navbar() {
                 <button
                   key={link.label}
                   onClick={link.action}
-                  className={`text-[13px] font-semibold uppercase tracking-[2px] transition-colors duration-300 hover:text-gold-500 cursor-pointer ${
+                  className={`text-[12px] font-semibold uppercase tracking-[2px] transition-colors duration-300 hover:text-zaoga-500 cursor-pointer ${
                     scrolled ? "text-charcoal/80" : "text-white/90"
                   }`}
                 >
@@ -98,6 +78,25 @@ export default function Navbar() {
                 </button>
               )
             )}
+            <a 
+              href="https://fifmi.org/watch-ezekiel-tv/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="w-full sm:w-auto py-4 px-6 flex items-center justify-center gap-3.5 group transition-all duration-200 active:scale-95"
+            >
+              <img 
+                src="/images/ezekieltvlogo.png" 
+                alt="Ezekiel TV" 
+                className="h-10 w-auto object-contain flex-shrink-0" // Taller height (40px), renders in full color
+              />
+              <span className={`font-semibold transition-colors text-base relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:transition-all after:duration-300 group-hover:after:w-full ${
+                scrolled 
+                  ? "text-charcoal/90 group-hover:text-charcoal after:bg-zaoga-500" 
+                  : "text-white/90 group-hover:text-white after:bg-white/50"
+              }`}>
+                Watch Ezekiel TV
+              </span>
+            </a>
           </nav>
 
           {/* Mobile Hamburger */}
@@ -164,6 +163,21 @@ export default function Navbar() {
               </button>
             )
           )}
+           <a 
+            href="https://fifmi.org/watch-ezekiel-tv/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="w-full sm:w-auto py-4 px-6 flex items-center justify-center gap-3.5 group transition-all duration-200 active:scale-95"
+          >
+            <img 
+              src="/images/ezekieltvlogo.png" 
+              alt="Ezekiel TV" 
+              className="h-10 w-auto object-contain flex-shrink-0" // Taller height (40px), renders in full color
+            />
+            <span className="font-semibold text-charcoal/90 group-hover:text-charcoal transition-colors text-base relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-zaoga-500 after:transition-all after:duration-300 group-hover:after:w-full">
+              Watch Ezekiel TV
+            </span>
+          </a>
         </div>
       </div>
     </header>
